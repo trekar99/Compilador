@@ -12,13 +12,13 @@ YACC = bison
 LIB = -lfl -lm
 
 INLEX = lexic.l
-INYACC = sintactic.y
+INYACC = syntactic.y
 
-OBJ = lexic.o sintactic.o compiler.o functions.o symtab.o
+OBJ = lexic.o syntactic.o compiler.o functions.o symtab.o
  
 SRC = compiler.c functions.c symtab/symtab.c
 SRCL = lexic.c
-SRCY = sintactic.c
+SRCY = syntactic.c
 
 BIN = compiler
 
@@ -26,7 +26,7 @@ LFLAGS = -n -o $*.c
 YFLAGS = -d -v -o $*.c
 CFLAGS = -ansi -Wall -g 
 
-OTHERS = sintactic.h sintactic.output
+OTHERS = syntactic.h syntactic.output
 ######################################################################
 all : $(SRCL) $(SRCY)
 	$(CC) -o $(BIN) $(CFLAGS) $(SRCY) $(SRC) $< $(LIB)

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include "./symtab/symtab.h"
-#include "sintactic.h"
+#include "syntactic.h"
 extern FILE *yyin;
 
 %}
