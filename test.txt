@@ -1,0 +1,72 @@
+/*
+	TEST DE PRUEBAS DE COMPILADORES
+	          PRÁCTICA 1
+	        GERMÁN PUERTO
+*/
+
+// Asignaciones
+ola := 10
+ns := 1.2e-2
+falso := false
+i := 1
+palabra := "pija"
+empty := "ola"
+bola := true
+
+// Expresiones básicas
+ola
+3 + 3
+ola + ola
+2+2*ola
+ola := ola * 3
+3 - 30
+ola
+i + i * 2
+2 + "sha"
+3.1 + "dos"
+"fua" + 2.3
+"ola" + 1
+5 ** 3
+ola
++2
+pichon := 2 * ((ola + 2) / 2)
+true and (false or true) and true
+
+// Prueba documentación
+// assignacions
+x := 1.5
+i := 5
+z := i * (x + i) - i / 4.0
+s := "Hola"
+b := z > 3 or not (i > 0 and i <= 10) or false
+// expressions bàsiques
+x
+i
+z
+s
+b
+
+// expressions
+i + i * 2
+-i + x
+//s + (s + i) + "--" + x + b
+b or not b
+
+// Trig 
+cos(90)
+picho := PI * E
+
+// Modos de representación
+ola
+-ola
+oct()
+ola
+bin()
+ola
+hex()
+ola
+
+// Otras funciones
+substr(palabra, 2, 2)
+
+

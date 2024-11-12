@@ -1,27 +1,38 @@
 ######################################################################
-# Compiladors I
+# Compiladors 2024/25
 # Germán Puerto
-# Makefile
-# Curs 07/08
 ######################################################################
+
 # General defines
 CC = gcc
 LEX = flex
-LIB = -lc -lfl -lm
+YACC = bison
 
-ELEX = example.l
+# Link flex
+LIB = -lfl -lm
 
-OBJ = example.o
-SRC = example.c
+INLEX = lexic.l
+INYACC = sintactic.y
 
-BIN = example
+OBJ = lexic.o sintactic.o compiler.o functions.o symtab.o
+ 
+SRC = compiler.c functions.c symtab/symtab.c
+SRCL = lexic.c
+SRCY = sintactic.c
+
+BIN = compiler
 
 LFLAGS = -n -o $*.c
-CFLAGS = -ansi -Wall -g
+YFLAGS = -d -v -o $*.c
+CFLAGS = -ansi -Wall -g 
+
+OTHERS = sintactic.h sintactic.output
 ######################################################################
-all : $(SRC)
-	$(CC) -o $(BIN) $(CFLAGS) $< $(LIB)
-$(SRC) : $(ELEX)
+all : $(SRCL) $(SRCY)
+	$(CC) -o $(BIN) $(CFLAGS) $(SRCY) $(SRC) $< $(LIB)
+$(SRCL) : $(INLEX)
 	$(LEX) $(LFLAGS) $<
+$(SRCY) : $(INYACC)
+	$(YACC) $(YFLAGS) $<
 clean :
-	rm -f $(BIN) $(OBJ) $(SRC)
+	rm -f $(BIN) $(OBJ) $(SRCL) $(SRCY) $(OTHERS)
