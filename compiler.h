@@ -1,3 +1,9 @@
+/*######################################################################
+#                           Compiladors
+#                      Germán Puerto Rodríguez
+#                             2024/25
+######################################################################*/
+
 /* compiler.h */
 extern int init_analisi_lexic(char*);
 extern int init_analisi_sintactic(char*);

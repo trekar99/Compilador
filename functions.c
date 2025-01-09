@@ -1,3 +1,9 @@
+/*######################################################################
+#                           Compiladors
+#                      Germán Puerto Rodríguez
+#                             2024/25
+######################################################################*/
+
 #include "./symtab/datatypes.h"
 #include "./functions.h"
 #include <stdlib.h>

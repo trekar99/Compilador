@@ -1,3 +1,9 @@
+/*######################################################################
+#                           Compiladors
+#                      Germán Puerto Rodríguez
+#                             2024/25
+######################################################################*/
+
 %{
 
 #include <stdio.h>
@@ -29,6 +35,9 @@ multicomment		\/\*[^*]*\*+([^\/][^*]*\*+)*\/
 EOL      		 	"\n"
 
 %%
+"repeat"  {return REPEAT;}
+"do"      {return DO;}
+"done"    {return DONE;}
 
 "+"                 { return ADD; }
 ":="                { return ASSIGN; }
@@ -37,42 +46,11 @@ EOL      		 	"\n"
 "/"                 { return DIV; }
 "%"              	{ return MOD; }
 "**"                { return POW; }
-
-"and"          		{ return AND; }
-"or"            	{ return OR; }
-"not"           	{ return NOT; }
-
-"=="            	{ return EQ; }
-">"           	  	{ return GT; }
-">="           	 	{ return GE; }
-"<"             	{ return LT; }
-"<="            	{ return LE; }
-"<>"            	{ return NE; }
-
-"sin"				{ return SIN; }
-"cos"				{ return COS; }
-"tan"				{ return TAN; }
-
-"PI"				{ return PI; }
-"E"					{ return E; }
-
-"len"				{ return LEN; }
-"substr"			{ return SUBSTR; }
-
-"dec"				{ return DEC; }
-"bin"				{ return BIN; }
-"oct"				{ return OCT; }
-"hex"				{ return HEX; }
-
-","					{ return COMMA; }
 "("					{ return IN_PAR; }
 ")"					{ return OUT_PAR; }
 
 {real}         		{ yylval.data.type = FLOAT; yylval.data.floatVal = atof(yytext); yylval.data.length = yyleng; return CONST; }
 {integer} 			{ yylval.data.type = INTEGER; yylval.data.intVal = atoi(yytext); yylval.data.length = yyleng; return CONST; }
-{boolean}			{ yylval.data.type = BOOLEAN;  yylval.data.boolVal = (strcmp(yytext, "true") == 0) ? 1 : 0; return BOOL; }
-{string} 			{ yylval.data.type = STRING; yylval.data.length = yyleng - 2; yylval.data.stringVal = (char *)malloc(sizeof(char)*yylval.data.length); 
-						memcpy( yylval.data.stringVal, &(yytext[1]), yylval.data.length); return CONST; }
 
 {identifier} 		{ 
 						yylval.data.name = (char *)malloc(sizeof(char)*yyleng); strncpy(yylval.data.name,yytext,yyleng);
@@ -80,7 +58,7 @@ EOL      		 	"\n"
 
 						var aux;
 						if (sym_lookup(yytext, &aux) == SYMTAB_NOT_FOUND) return ID;
-						else return (aux.type == BOOLEAN) ? BOOL_ID : ID;
+						else return ID;
 						
 					}
 

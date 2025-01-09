@@ -1,3 +1,9 @@
+/*######################################################################
+#                           Compiladors
+#                      Germán Puerto Rodríguez
+#                             2024/25
+######################################################################*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include "compiler.h"
@@ -7,7 +13,7 @@ int main(int argc, char *argv[]){
 	if (argc == 3){ error = init_analisi_lexic(argv[1]);
 		if(error == EXIT_SUCCESS){ error = init_analisi_sintactic(argv[2]);
 			if(error == EXIT_SUCCESS){ error = analisi_semantic();
-				error == EXIT_SUCCESS ? printf("The compilation has been successful\n") : printf("ERROR");
+				error == EXIT_SUCCESS ? printf("The compilation has been successful\n") : printf("\033[31;1m ERROR \033[0m");
 				error = end_analisi_sintactic();
 				if(error == EXIT_FAILURE){printf("The output file can not be closed\n");}
 				error = end_analisi_lexic();
