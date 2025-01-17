@@ -12,8 +12,8 @@
 	extern FILE *yyout; 
 	extern int yylineno; 
 	extern int yylex();
-	#include "./functions.h"
-	#include "./quad.h"
+	#include "./utils/functions.h"
+	#include "./utils/quad.h"
 	#include "./symtab/symtab.h"	
 
 	extern int yyerror(char *explanation);
