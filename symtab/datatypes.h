@@ -23,7 +23,11 @@ typedef struct var
     };
     datatype type;
     int length;
+
+    // Auxiliar variables for temp managing
+    char * dest;
 } var;
+
 
 typedef struct quad
 {

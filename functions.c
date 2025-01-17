@@ -6,6 +6,7 @@
 
 #include "./symtab/datatypes.h"
 #include "./functions.h"
+#include "./quad.h"
 #include <stdlib.h>
 #include <math.h>
 #define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
@@ -69,69 +70,62 @@ int substr(var v, var *result, int ini, int length) {
 
 /* Arithmetic operations*/
 int add(var v1, var v2, var *result) {
-
-      if (v1.type == STRING || v2.type == STRING) {
-            result->stringVal = (char *) malloc( v1.length + v2.length );
-            result->type = STRING;
-
-            if (v1.type == INTEGER && v2.type == STRING) sprintf( result->stringVal, "%d%s", v1.intVal, v2.stringVal );
-            else if (v1.type == STRING && v2.type == INTEGER) sprintf( result->stringVal, "%s%d", v1.stringVal, v2.intVal );
-            else if (v1.type == FLOAT && v2.type == STRING) sprintf( result->stringVal, "%g%s", v1.floatVal, v2.stringVal );
-            else if (v1.type == STRING && v2.type == FLOAT) sprintf( result->stringVal, "%s%g", v1.stringVal, v2.floatVal );
-            else if (v1.type == BOOLEAN && v2.type == STRING) sprintf( result->stringVal, "%s%s", v1.boolVal ? "true" : "false", v2.stringVal );
-            else if (v1.type == STRING && v2.type == BOOLEAN) sprintf( result->stringVal, "%s%s", v1.stringVal , v2.boolVal ? "true" : "false" );
-            else if (v1.type == STRING && v2.type == STRING) sprintf( result->stringVal, "%s%s", v1.stringVal, v2.stringVal );
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: adding a STRING with an incompatible type. \033[0m" ); 
-                  return 1;
-            }
+      
+      result->dest = (char *)malloc(100);
+      if (v1.type == INTEGER && v2.type == INTEGER) {
+            result->type = INTEGER;
+            strcpy(result->dest, newTemp());
+            addQuad(4, "ADDI", result->dest, v1.dest, v2.dest);
       }
-
-      else if (v1.type == FLOAT || v2.type == FLOAT) {
+      else if ((v1.type == INTEGER || v1.type == FLOAT) && (v2.type == INTEGER || v2.type == FLOAT)) {
             result->type = FLOAT;
 
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = v1.floatVal + v2.intVal;  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = v1.intVal + v2.floatVal;  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = v1.floatVal + v2.floatVal;  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: adding a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
+            char * chTemp = (char *)malloc(100);
+            strcpy(chTemp, newTemp());
+            if (v1.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v1.dest);
+                  v1.type = FLOAT;
+                  strcpy(v1.dest, chTemp);
+            } 
+            if (v2.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v2.dest);
+                  v2.type = FLOAT;
+                  strcpy(v2.dest, chTemp);
             }
+            strcpy(result->dest, newTemp());
+		addQuad(4, "ADDF", result->dest, v1.dest, v2.dest);
       }
-
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = v1.intVal + v2.intVal;
-            result->type = INTEGER;
-      }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); 
-            return 1;
-      }
+      else { yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); return 1; }
 
       return 0;
 }
 
 int sub(var v1, var v2, var *result) {
-      if (v1.type == FLOAT || v2.type == FLOAT) {
+      result->dest = (char *)malloc(100);
+      if (v1.type == INTEGER && v2.type == INTEGER) {
+            result->type = INTEGER;
+            strcpy(result->dest, newTemp());
+            addQuad(4, "SUBI", result->dest, v1.dest, v2.dest);
+      }
+      else if ((v1.type == INTEGER || v1.type == FLOAT) && (v2.type == INTEGER || v2.type == FLOAT)) {
             result->type = FLOAT;
 
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = v1.floatVal - v2.intVal;  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = v1.intVal - v2.floatVal;  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = v1.floatVal - v2.floatVal;  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: substracting a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
+            char * chTemp = (char *)malloc(100);
+            strcpy(chTemp, newTemp());
+            if (v1.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v1.dest);
+                  v1.type = FLOAT;
+                  strcpy(v1.dest, chTemp);
+            } 
+            if (v2.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v2.dest);
+                  v2.type = FLOAT;
+                  strcpy(v2.dest, chTemp);
             }
+            strcpy(result->dest, newTemp());
+		addQuad(4, "SUBF", result->dest, v1.dest, v2.dest);
       }
-
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = v1.intVal - v2.intVal;
-            result->type = INTEGER;
-      }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: substracting incompatible types. \033[0m" ); 
-            return 1;
-      }
+      else { yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); return 1; }
 
       return 0;
 }
@@ -150,8 +144,9 @@ int mul(var v1, var v2, var *result) {
       }
 
       else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = v1.intVal * v2.intVal;
             result->type = INTEGER;
+            strcpy(result->dest, newTemp());
+            addQuad(4, "MULI", result->dest, v1.dest, v2.dest);
       }
       else {
             yyerror( "\033[31;1m SEMANTIC ERROR: multiplying incompatible types. \033[0m" ); 

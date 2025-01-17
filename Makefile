@@ -15,9 +15,9 @@ LIB = -lfl -lm
 INLEX = lexic.l
 INYACC = syntactic.y
 
-OBJ = lexic.o syntactic.o compiler.o functions.o symtab.o
+OBJ = lexic.o syntactic.o compiler.o functions.o symtab.o quad.o
  
-SRC = compiler.c functions.c symtab/symtab.c
+SRC = compiler.c functions.c symtab/symtab.c quad.c
 SRCL = lexic.c
 SRCY = syntactic.c
 

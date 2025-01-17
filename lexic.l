@@ -52,8 +52,10 @@ EOL      		 	"\n"
 "("					{ return IN_PAR; }
 ")"					{ return OUT_PAR; }
 
-{real}         		{ yylval.data.type = FLOAT; yylval.data.floatVal = atof(yytext); yylval.data.length = yyleng; return CONST; }
-{integer} 			{ yylval.data.type = INTEGER; yylval.data.intVal = atoi(yytext); yylval.data.length = yyleng; return CONST; }
+{real}         		{ yylval.data.type = FLOAT; yylval.data.floatVal = atof(yytext); yylval.data.length = yyleng; 
+						yylval.data.dest = (char *)malloc(sizeof(char)*yyleng+1); strncpy(yylval.data.dest, yytext, yyleng+1); return CONST; }
+{integer} 			{ yylval.data.type = INTEGER; yylval.data.intVal = atoi(yytext); yylval.data.length = yyleng; 
+						yylval.data.dest = (char *)malloc(sizeof(char)*yyleng+1); strncpy(yylval.data.dest, yytext, yyleng+1); return CONST; }
 
 {identifier} 		{ 
 						yylval.data.name = (char *)malloc(sizeof(char)*yyleng); strncpy(yylval.data.name,yytext,yyleng);
