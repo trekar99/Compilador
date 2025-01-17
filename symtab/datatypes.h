@@ -25,6 +25,14 @@ typedef struct var
     int length;
 } var;
 
+typedef struct quad
+{
+    char * op; 
+    char * arg1; 
+    char * arg2; 
+    char * result;   
+} quad;
+
 typedef union{ var data; }YYSTYPE;
 
 #define M_PI 3.14159265358979323846264338327950288
