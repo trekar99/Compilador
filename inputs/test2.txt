@@ -1,0 +1,6 @@
+// Power 
+power := 5**5
+
+// Change sign 
+negate := 1
+negate := -negate

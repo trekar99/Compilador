@@ -70,7 +70,6 @@ int substr(var v, var *result, int ini, int length) {
 
 /* Arithmetic operations*/
 int add(var v1, var v2, var *result) {
-      
       result->dest = (char *)malloc(100);
       if (v1.type == INTEGER && v2.type == INTEGER) {
             result->type = INTEGER;
@@ -131,121 +130,112 @@ int sub(var v1, var v2, var *result) {
 }
  
 int mul(var v1, var v2, var *result) {
-      if (v1.type == FLOAT || v2.type == FLOAT) {
-            result->type = FLOAT;
-
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = v1.floatVal * v2.intVal;  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = v1.intVal * v2.floatVal;  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = v1.floatVal * v2.floatVal;  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: multiplying a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
-            }
-      }
-
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
+      result->dest = (char *)malloc(100);
+      if (v1.type == INTEGER && v2.type == INTEGER) {
             result->type = INTEGER;
             strcpy(result->dest, newTemp());
             addQuad(4, "MULI", result->dest, v1.dest, v2.dest);
       }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: multiplying incompatible types. \033[0m" ); 
-            return 1;
+      else if ((v1.type == INTEGER || v1.type == FLOAT) && (v2.type == INTEGER || v2.type == FLOAT)) {
+            result->type = FLOAT;
+
+            char * chTemp = (char *)malloc(100);
+            strcpy(chTemp, newTemp());
+            if (v1.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v1.dest);
+                  v1.type = FLOAT;
+                  strcpy(v1.dest, chTemp);
+            } 
+            if (v2.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v2.dest);
+                  v2.type = FLOAT;
+                  strcpy(v2.dest, chTemp);
+            }
+            strcpy(result->dest, newTemp());
+		addQuad(4, "MULF", result->dest, v1.dest, v2.dest);
       }
+      else { yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); return 1; }
 
       return 0;
 }
 
 int division(var v1, var v2, var *result) {
-      if (v1.type == FLOAT || v2.type == FLOAT) {
+      if(strcmp(v2.dest, "0") == 0) { yyerror( "\033[31;1m SEMANTIC ERROR: can't divide by ZERO. \033[0m" ); return 1; }
+
+      result->dest = (char *)malloc(100);
+      if (v1.type == INTEGER && v2.type == INTEGER) {
+            result->type = INTEGER;
+            strcpy(result->dest, newTemp());
+            addQuad(4, "DIVI", result->dest, v1.dest, v2.dest);
+      }
+      else if ((v1.type == INTEGER || v1.type == FLOAT) && (v2.type == INTEGER || v2.type == FLOAT)) {
             result->type = FLOAT;
 
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = v1.floatVal / v2.intVal;  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = v1.intVal / v2.floatVal;  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = v1.floatVal / v2.floatVal;  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: dividing a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
+            char * chTemp = (char *)malloc(100);
+            strcpy(chTemp, newTemp());
+            if (v1.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v1.dest);
+                  v1.type = FLOAT;
+                  strcpy(v1.dest, chTemp);
+            } 
+            if (v2.type == INTEGER) {
+                  addQuad(3, "I2F", chTemp, v2.dest);
+                  v2.type = FLOAT;
+                  strcpy(v2.dest, chTemp);
             }
+            strcpy(result->dest, newTemp());
+		addQuad(4, "DIVF", result->dest, v1.dest, v2.dest);
       }
-
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = v1.intVal / v2.intVal;
-            result->type = INTEGER;
-      }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: dividing incompatible types. \033[0m" ); 
-            return 1;
-      }
+      else { yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); return 1; }
 
       return 0;
 }
 
 int mod(var v1, var v2, var *result) {
-      if (v1.type == FLOAT || v2.type == FLOAT) {
-            result->type = FLOAT;
-
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = fmod( v1.floatVal, v2.intVal );  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = fmod( v1.intVal, v2.floatVal );  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = fmod( v1.floatVal, v2.floatVal );  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: moduling a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
-            }
-      }
-
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = fmod( v1.intVal, v2.intVal );  
+      result->dest = (char *)malloc(100);
+      if (v1.type == INTEGER && v2.type == INTEGER) {
             result->type = INTEGER;
+            strcpy(result->dest, newTemp());
+            addQuad(4, "MODI", result->dest, v1.dest, v2.dest);
       }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: moduling incompatible types. \033[0m" ); 
-            return 1;
-      }
+      else { yyerror( "\033[31;1m SEMANTIC ERROR: adding incompatible types. \033[0m" ); return 1; }
 
       return 0;
 }
 
 int power(var v1, var v2, var *result) {
-      if (v1.type == FLOAT || v2.type == FLOAT) {
-            result->type = FLOAT;
+      result->dest = (char *)malloc(100);
+      if (v2.type != INTEGER) { yyerror("\033[31;1m SEMANTIC ERROR: Invalid operation for float type. \033[0m "); return 1; }
 
-            if (v1.type == FLOAT && v2.type == INTEGER) result->floatVal = pow( v1.floatVal, v2.intVal );  
-            else if (v1.type == INTEGER && v2.type == FLOAT) result->floatVal = pow( v1.intVal, v2.floatVal );  
-            else if (v1.type == FLOAT && v2.type == FLOAT) result->floatVal = pow( v1.floatVal, v2.floatVal );  
-            else {
-                  yyerror( "\033[31;1m SEMANTIC ERROR: powering a FLOAT with an incompatible type. \033[0m" ); 
-                  return 1;
+      int v2_int = atoi(v2.dest);
+
+      result->type = v1.type;
+      strcpy(result->dest, newTemp());
+
+      if(v2_int > 1) {
+            addQuad(4, (v1.type) == INTEGER ? "MULI" : "MULF", result->dest, v1.dest, v1.dest);
+
+            char * prevResult = (char *)malloc(100);
+
+            for (int i = 1; i < v2_int; i++) {
+                  strcpy(prevResult, result->dest);
+                  strcpy(result->dest, newTemp());
+                  addQuad(4, (v1.type) == INTEGER ? "MULI" : "MULF", result->dest, prevResult, v1.dest);
             }
       }
+      else addQuad(4, (v1.type) == INTEGER ? "MULI" : "MULF", result->dest, v1.dest, "1");
 
-      else if (v1.type == INTEGER && v2.type == INTEGER) {
-            result->intVal = pow( v1.intVal, v2.intVal );  
-            result->type = INTEGER;
-      }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: powering incompatible types. \033[0m" ); 
-            return 1;
-      }
 
       return 0;
 }
 
 int negate(var v, var *result) {
-      if(v.type == INTEGER) {
-        result->type = INTEGER;
-        result->intVal = - v.intVal;
+      result->dest = (char *)malloc(100);
+      result->type = v.type;
 
-      }
-      else if ( v.type == FLOAT ){
-            result->type = FLOAT;
-            result->floatVal = - v.floatVal;
-      }
-      else {
-            yyerror( "\033[31;1m SEMANTIC ERROR: negating incompatible types. \033[0m" ); 
-            return 1;
-      }
-
+      strcpy(result->dest, newTemp());
+      addQuad(3, (result->type == INTEGER) ? "CHSI" : "CHSF", result->dest, v.dest);
+      
       return 0;
 }
 

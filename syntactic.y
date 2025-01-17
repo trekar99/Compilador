@@ -27,90 +27,61 @@
 
 %start program
 
-%token ASSIGN ADD SUB MUL DIV MOD POW EOL IN_PAR OUT_PAR DO DONE
+%token ASSIGN ADD SUB MUL DIV MOD POW EOL END IN_PAR OUT_PAR DO DONE
 %token <data> CONST ID REPEAT
-%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 
+%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 repeat_statement_start
 
 %%
 
 program: statement_list
 
-statement_list: statement_list statement | statement | statement_list repeat_statement_end;
+statement_list: statement_list statement | statement | statement_list repeat_statement_end | END
 
 repeat_statement_start: REPEAT expression {
 												if($2.type == FLOAT) { yyerror("\033[31;1m SEMANTIC ERROR: loop expression NOT an integer... \033[0m" ); YYERROR; }
 
-												// 	fprintf(flog, "Line %d, LOOP START\n", yylineno); 
-												// 	yylineno++;
-												// 	$$ = $2;
-												// 	$$.ctr = (char *)malloc(100);
-												// 	strcpy($$.ctr, newTemp());
-												// 	addQuad(2, $$.ctr, "0");
-												// 	$$.repeat = currQuad +1;
-												// }
+												$$ = $2;
+												$$.control = (char *)malloc(100);
+												strcpy($$.control, newTemp());
+												addQuad(3, ":=", $$.control, "0");
+												$$.repeat = currQuad + 1;
 										}
 
 repeat_statement_end: repeat_statement_start DO EOL statement_list DONE {
-											// fprintf(flog, "Line %d, LOOP END\n", yylineno); 
-											
-											// SE LA PELA EL STATEMENT_LIST SOLO SE ENCARGA DEL GOTO
-											// if($1.type == UNDEFINED){}
-											// else if($4.type == UNDEFINED){
-											// 	$$.type = UNDEFINED;
-											// 	yyerror("SEMANTIC ERROR: Error in loop error detected.\n");
-											// } else{
-											// 	if($1.type == INTEGER) addQuad(4, $1.ctr, "ADDI", $1.ctr, "1");
-											// 	else addQuad(4, $1.ctr, "ADDF", $1.ctr, "1");
+											addQuad(4, $1.type == INTEGER ? "ADDI" : "ADDF", $1.control, $1.control, "1"); // Index++
 												
-											// 	char str[20];
-											// 	sprintf(str, "%d", $1.repeat);
-											// 	if ($1.type == INTEGER)	{
-											// 		addQuad(4, $1.ctr, "LTI", $1.place, str);
-											// 	} else {
-											// 		addQuad(4, $1.ctr, "LTF", $1.place, str);
-											// 	}
-											// }
-											addQuad(1, "LTI");
+											char str[20];
+											sprintf(str, "%d", $1.repeat);
+											addQuad(4, $1.type == INTEGER ? "LTI" : "LTF", $1.control, $1.dest, str);
 										} 
 
 
 statement: ID EOL						{
 											if(sym_lookup($1.name, &$1) == SYMTAB_NOT_FOUND) { yyerror( "\033[31;1m SEMANTIC ERROR: variable NOT FOUND... \033[0m" ); YYERROR; } 
 											else { 
-												printf("EXPRESSION: { type: %s, value: %s }\n", typeToString($1), valueToString($1));
 												fprintf(yyout, "EXPRESSION: { type: %s, value: %s } \n", typeToString($1), valueToString($1)); 
 
 												addQuad(2, "PARAM", $1.name);
-												//fprintf(flog, "Line %d, PARAM %s set\n", yylineno, $1.name);
-
 												addQuad(3, "CALL", $1.type == INTEGER  ? "PUTI" : "PUTF", "1");
-												// 	fprintf(flog, "Line %d, calling PUTI/PUTF\n", yylineno);
 											}
 										}
 										
 
 			| ID ASSIGN expression EOL  { 	
 											sym_enter( $1.name, &$3 );
-											printf("ASSIGNATION: { id: %s, type: %s, value: %s }\n", $1.name, typeToString($3), valueToString($3));
 											fprintf(yyout, "ASSIGNATION: { id: %s, type: %s, value: %s } \n", $1.name, typeToString($3), valueToString($3)); 
 
 											addQuad(3, ":=", $1.name, $3.dest);
 										}				
-			| EOL { printf("\n"); }
+										
+			| EOL {}
 
 expression: arithm 
 
 arithm: arithm_l1 | arithm ADD arithm_l1 { if( add($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the ADD operation... \033[0m" ); YYABORT; } }
 			| arithm SUB arithm_l1 { if( sub($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the SUB operation... \033[0m" ); YYABORT; } }
 			| ADD arithm_l1 { $$ = $2; }
-			| SUB arithm_l1 { 
-								if( negate($2, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the NEGATE operation... \033[0m" ); YYABORT; }
-
-								// PLACE SON PARA LOS TMPS
-								// $$.place = (char *)malloc(5);
-								// strcpy($$.place, newTemp());
-								// addQuad(3, $$.place, $2.type == INTEGER ? "CHSI" : "CHSF", $2.place);
-							}
+			| SUB arithm_l1 { if( negate($2, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the NEGATE operation... \033[0m" ); YYABORT; } }
 
 arithm_l1: 	arithm_l2 | arithm_l1 MUL arithm_l2	{ if( mul($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the MUL operation... \033[0m" ); YYABORT; }} 
 				| arithm_l1 DIV arithm_l2 { if( division($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the DIV operation... \033[0m" ); YYABORT; }}

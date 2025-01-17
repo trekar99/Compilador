@@ -26,6 +26,8 @@ typedef struct var
 
     // Auxiliar variables for temp managing
     char * dest;
+    char * control;
+    int repeat;
 } var;
 
 
