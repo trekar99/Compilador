@@ -17,7 +17,7 @@ INYACC = syntactic.y
 
 OBJ = lexic.o syntactic.o compiler.o functions.o symtab.o quad.o
  
-SRC = compiler.c functions.c symtab/symtab.c quad.c
+SRC = compiler.c utils/functions.c symtab/symtab.c utils/quad.c
 SRCL = lexic.c
 SRCY = syntactic.c
 
