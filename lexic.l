@@ -35,6 +35,9 @@ multicomment		\/\*[^*]*\*+([^\/][^*]*\*+)*\/
 EOL      		 	"\n"
 
 %%
+{comment}			{ printf( "%s", yytext ); }
+{multicomment}		{}
+
 "repeat"  {return REPEAT;}
 "do"      {return DO;}
 "done"    {return DONE;}
@@ -61,9 +64,6 @@ EOL      		 	"\n"
 						else return ID;
 						
 					}
-
-{comment}			{ printf( "%s", yytext ); }
-{multicomment}		{}
 
 
 "\n"				{ return EOL; }

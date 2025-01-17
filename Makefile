@@ -25,7 +25,7 @@ BIN = compiler
 
 LFLAGS = -n -o $*.c
 YFLAGS = -d -v -o $*.c
-CFLAGS = -ansi -Wall -g 
+CFLAGS = -ansi -Wall -g -std=c99
 
 OTHERS = syntactic.h syntactic.output
 ######################################################################
