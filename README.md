@@ -10,8 +10,10 @@ A simple calculator compiler
 - lexic.l: Flex file that defines the regular expressions for the lexer.
 - syntactic.y: Bison grammar file that defines the grammar rules for the calculator.
 - compiler.c & compiler.h: Main structure and functions of the compiler.
-- functions.c & functions.h: Auxiliar functions for running the compiler.
 - symtab/datatypes.h: Definition of types for symtab and grammar logic.
+### Utils
+- quad.c: functions to manage the generation of the Three Adress Code
+- functions.c & functions.h: Auxiliar functions for running the compiler.
 
 ## Working with the compiler
 ### Build
@@ -27,16 +29,12 @@ A simple calculator compiler
 `$ make clean`
 
 ## Details
-### Basics
-- The program supports basic mathematical operations (+,-,*,/,**) and additionally trigonometric functions (sin,cos,tan) and string. Numerical values must be integers or floats
-- Exponential numbers are also supported
-- YYSTYPE defined as var in datatypes.h
-- Bool can't be concatenate.
-- Errors are visible in red and execution stops when there is one.
-
-### Extras
-- The calculator supports trigonometric functions (sin, cos, tan)
-- Supports LEN string length function and substring extraction SUBSTR(string; start; length)
-- Supports the use of default constants PI, E
-- Allows representation in octal (OCT), binary (BIN), hexagesimal (HEX) or decimal mode, which is the default format (DEC)
+- Support for Arithmetic Expressions: Handles integer and real literals, identifiers, and arithmetic operators.
+- Variable Assignments: Allows assignment of values to variables.
+- Basic Control Flow Statements: Implements unconditional iterative statements (repeat...do).
+- Type Handling: Supports explicit type changes and one-dimensional arrays.
+- Code Generation: Generates three-address code (C3A) for expressions and control statements.
+- Error Reporting: Provides detailed error messages for lexical, syntactic, or semantic errors.
+- Comment Support: Allows single-line (//) and multi-line (//) comments in the source code.
+- No Pointers: Does not support pointers, simplifying the code generation process.
 
