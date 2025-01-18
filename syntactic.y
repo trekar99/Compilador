@@ -98,13 +98,34 @@ arithm_l3: 	IN_PAR arithm OUT_PAR { $$ = $2; }
 									}
 									else {
 										$$.type = $1.type; 
-										$$.dest = (char *)malloc(50); 
-										strcpy($$.dest, $1.name); 
+										
 										$$.name = (char *)malloc(100);
 										strcpy($$.name, $1.name); 
+
+										if($$.length > 0) {
+											char * chTemp = (char *)malloc(100);
+											strcpy(chTemp, newTemp());
+
+											char posToStr[20];
+											sprintf(posToStr, "%d", $$.length);
+
+											addQuad(4, "MULI", chTemp, posToStr, "4");		// Index * ByteNum
+
+											char * resultTemp = (char *)malloc(100);
+											strcpy(resultTemp, newTemp());
+											addQuad(4, "ADDI", resultTemp, "1", chTemp);		// ++Base
+
+											
+											strcpy($$.dest, resultTemp);
+										}
+										else {
+											$$.dest = (char *)malloc(50); 
+											strcpy($$.dest, $1.name); 
+										}
 									}
 								}		
 				| CONST 
+
 
 %%
 

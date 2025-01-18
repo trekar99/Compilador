@@ -22,6 +22,7 @@ SRCL = lexic.c
 SRCY = syntactic.c
 
 BIN = compiler
+LOG = log.txt
 
 LFLAGS = -n -o $*.c
 YFLAGS = -d -v -o $*.c
@@ -37,3 +38,8 @@ $(SRCY) : $(INYACC)
 	$(YACC) $(YFLAGS) $<
 clean :
 	rm -f $(BIN) $(OBJ) $(SRCL) $(SRCY) $(OTHERS)
+
+test1: 
+	./$(BIN) inputs/test.txt $(LOG)
+test2:
+	./$(BIN) inputs/test2.txt $(LOG)

@@ -4,3 +4,27 @@ power := 5**5
 // Change sign 
 negate := 1
 negate := -negate
+
+// Nested loop
+ten := 0
+hundred := 0
+n := 10
+i := 0
+j := 0
+repeat n do
+ten := ten + 1
+repeat n do
+hundred := hundred + 1
+j := j + 1
+done
+i := i + 1
+done
+
+ten 
+hundred
+
+// Arrays
+arr[1] := 1
+arr[2] := 2
+arr[3] := arr[1] + arr[2]
+arr[4] := arr[2] + arr[3]

@@ -23,6 +23,7 @@ extern FILE *yyin;
 letter 				[a-zA-Z]
 digit 				[0-9]
 
+array				{letter}({letter}|{digit})*\[([0-9])+\]
 identifier  		{letter}({letter}|{digit})*
 	
 integer		 		{digit}({digit})*
@@ -57,14 +58,27 @@ EOL      		 	"\n"
 {integer} 			{ yylval.data.type = INTEGER; yylval.data.intVal = atoi(yytext); yylval.data.length = yyleng; 
 						yylval.data.dest = (char *)malloc(sizeof(char)*yyleng+1); strncpy(yylval.data.dest, yytext, yyleng+1); return CONST; }
 
-{identifier} 		{ 
+{array}				{
 						yylval.data.name = (char *)malloc(sizeof(char)*yyleng); strncpy(yylval.data.name,yytext,yyleng);
-						yylval.data.length = yyleng; 
+
+						char *ini = strstr(yytext, "[");
+						char *end = strchr(ini + 1, ']');
+						*end = '\0';
+
+						yylval.data.length = atoi(ini + 1);
 
 						var aux;
 						if (sym_lookup(yytext, &aux) == SYMTAB_NOT_FOUND) return ID;
 						else return ID;
-						
+					}
+
+{identifier} 		{ 
+						yylval.data.name = (char *)malloc(sizeof(char)*yyleng); strncpy(yylval.data.name,yytext,yyleng);
+						yylval.data.length = -1; 
+
+						var aux;
+						if (sym_lookup(yytext, &aux) == SYMTAB_NOT_FOUND) return ID;
+						else return ID;
 					}
 
 
