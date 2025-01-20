@@ -27,23 +27,20 @@
 
 %start program
 
-%token ASSIGN ADD SUB MUL DIV MOD POW EOL END IN_PAR OUT_PAR 
-%token DO DONE IF THEN ELSE FI WHILE UNTIL FOR IN RANG AND NOT OR
+%token ASSIGN ADD SUB MUL DIV MOD POW EOL IN_PAR OUT_PAR 
+%token DO DONE IF THEN ELSE FI WHILE UNTIL FOR IN RANG AND NOT OR SWITCH FSWITCH CASE DEFAULT BREAK
 %token <data> CONST ID REPEAT BOOL BOOLOP
-%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 repeat_statement_start statement statement_list M N indexed_statementStart
+%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 repeat_statement_start statement statement_list M N indexed_statement_start
 %type <data> boolean_op1 boolean_op2 boolean_op3 boolean_arithmetic boolean 
 
 %%
 
 program: statement_list {backpatch($1.nextlist, currQuad);}
 
-statement_list: //statement_list M statement { backpatch($1.nextlist, $2.repeat); $$.nextlist = $3.nextlist; }
-				statement_list statement {backpatch($2.nextlist, currQuad+1);} 
-				| statement {$$.nextlist = $1.nextlist;} | statement_list repeat_statement_end 
+statement_list: statement_list statement {backpatch($2.nextlist, currQuad+1);} | statement {$$.nextlist = $1.nextlist;} | statement_list repeat_statement_end 
 
 repeat_statement_start: REPEAT arithm {
 												if($2.type == FLOAT) { yyerror("\033[31;1m SEMANTIC ERROR: loop expression NOT an integer... \033[0m" ); YYERROR; }
-
 												$$ = $2;
 												$$.control = (char *)malloc(100);
 												strcpy($$.control, newTemp());
@@ -86,6 +83,9 @@ statement: ID EOL						{
 																					list * temp = merge($8.nextlist, $9.nextlist);
 																					$$.nextlist = merge(temp, $12.nextlist);
 																				}	
+			| SWITCH IN_PAR arithm OUT_PAR EOL case_list DEFAULT EOL statement_list BREAK EOL FSWITCH EOL {
+
+			}
 			| WHILE IN_PAR M boolean OUT_PAR DO EOL M statement_list DONE EOL {
 				backpatch($9.nextlist, $3.repeat);
 				backpatch($4.truelist, $8.repeat);
@@ -96,7 +96,7 @@ statement: ID EOL						{
 				free(aux);
 			}
 			| DO EOL M statement_list UNTIL IN_PAR boolean OUT_PAR EOL { backpatch($7.truelist, $3.repeat); $$.nextlist = merge($7.falselist, $4.nextlist); }
-			| indexed_statementStart DO EOL statement_list DONE EOL	{
+			| indexed_statement_start DO EOL statement_list DONE EOL	{
 				yylineno++;
 				addQuad(4, "ADDI", $1.name, $1.name, "1");
 				char * aux = malloc(sizeof(char)*10);
@@ -114,10 +114,12 @@ statement: ID EOL						{
 										
 			| EOL {}
 
-indexed_statementStart: FOR ID IN arithm RANG arithm {
+indexed_statement_start: FOR ID IN arithm RANG arithm {
 	if($2.type != INTEGER){ yyerror("SEMANTIC ERROR: Loop initialization, invalid float operation.\n"); YYABORT; } 
 	else { addQuad(3, ":=", $2.name, $4.dest); $$.dest = $4.dest; $$.repeat = currQuad; $$.name = $2.name; addQuad(4, "IF", $2.name, "LEI", $6.dest); }
 };
+
+case_list: CASE arithm EOL statement_list BREAK EOL | CASE arithm EOL statement_list BREAK EOL case_list
 
 M: { $$.repeat = currQuad + 1; };
 N: { $$.nextlist = makelist(currQuad); addQuad(1, "GOTO");};
@@ -204,17 +206,11 @@ boolean_op3: boolean_arithmetic | IN_PAR boolean OUT_PAR	{ $$ = $2; }
 		else $$.falselist = makelist(currQuad);
 		addQuad(1, "GOTO");
 	}
-	/*| B_ID	{	
-		if(sym_lookup($1.name, &$1) == SYMTAB_NOT_FOUND) {
-			yyerror("SEMANTIC ERROR: VARIABLE NOT FOUND\n");errflag = 1; YYERROR;
-		}
-		else { $$.type = $1.type; $$.value=$1.value; $$.place = $1.place;} 
-	};*/
+	// | BOOL_ID
 
 boolean_arithmetic: arithm BOOLOP arithm 	{
-	int aux = currQuad +1;
 	$$.truelist = makelist(currQuad);
-	$$.falselist = makelist(aux);
+	$$.falselist = makelist(currQuad +1);
 	char buffer[100];
 	sprintf(buffer, $2.dest);
 	strcat(buffer, ($1.type == INTEGER && $3.type == INTEGER) ? "I" : "F");

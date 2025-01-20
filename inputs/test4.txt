@@ -8,7 +8,7 @@ else
 total := total - 1
 fi
 i := -i
-if (total > 666.6)then
+if (total > 666.6 or total == 500.0) then
 i := 111
 fi
 done

@@ -28,7 +28,7 @@ LFLAGS = -n -o $*.c
 YFLAGS = -d -v -o $*.c 
 CFLAGS = -ansi -Wall -g -std=c99 
 
-OTHERS = syntactic.h syntactic.output
+OTHERS = syntactic.h syntactic.output log.txt
 ######################################################################
 all : $(SRCL) $(SRCY)
 	$(CC) -o $(BIN) $(CFLAGS) $(SRCY) $(SRC) $< $(LIB)
@@ -47,3 +47,5 @@ test3:
 	./$(BIN) inputs/test3.txt $(LOG)
 test4:
 	./$(BIN) inputs/test4.txt $(LOG)
+test5:
+	./$(BIN) inputs/test5.txt $(LOG)

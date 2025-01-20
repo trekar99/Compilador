@@ -48,6 +48,11 @@ multicomment		\/\*[^*]*\*+([^\/][^*]*\*+)*\/
 "for"     			{return FOR;}
 "in"      			{return IN;}
 ".."      			{return RANG;}
+"switch"			{return SWITCH;}
+"case"				{return CASE;}
+"default"			{return DEFAULT;}
+"break;"			{return BREAK;}
+"fswitch"			{return FSWITCH;}
 
 "+"                 { return ADD; }
 ":="                { return ASSIGN; }
