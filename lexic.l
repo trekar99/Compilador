@@ -25,23 +25,29 @@ digit 				[0-9]
 
 array				{letter}({letter}|{digit})*\[([0-9])+\]
 identifier  		{letter}({letter}|{digit})*
-	
+
 integer		 		{digit}({digit})*
 real 				{integer}\.{digit}*([eE][-+]?{digit}+)?
 boolean				true|false
-string			    \".[^"\n]*\"
 comment				\/\/.*\n|\#.*\n
 multicomment		\/\*[^*]*\*+([^\/][^*]*\*+)*\/
-
-EOL      		 	"\n"
 
 %%
 {comment}			{}
 {multicomment}		{}
 
-"repeat"  {return REPEAT;}
-"do"      {return DO;}
-"done"    {return DONE;}
+"repeat"  			{return REPEAT;}
+"do"      			{return DO;}
+"done"    			{return DONE;}
+"if"      			{return IF;}
+"then"    			{return THEN;}
+"else"    			{return ELSE;}
+"fi"      			{return FI;}
+"while"   			{return WHILE;}
+"until"   			{return UNTIL;}
+"for"     			{return FOR;}
+"in"      			{return IN;}
+".."      			{return RANG;}
 
 "+"                 { return ADD; }
 ":="                { return ASSIGN; }
@@ -53,10 +59,24 @@ EOL      		 	"\n"
 "("					{ return IN_PAR; }
 ")"					{ return OUT_PAR; }
 
+"=="            	{ yylval.data.dest = "EQ"; return BOOLOP; }
+">"             	{ yylval.data.dest = "GT"; return BOOLOP; }
+">="            	{ yylval.data.dest = "GE"; return BOOLOP; }
+"<"             	{ yylval.data.dest = "LT"; return BOOLOP; }
+"<="            	{ yylval.data.dest = "LE"; return BOOLOP; }
+"<>"            	{ yylval.data.dest = "NE"; return BOOLOP; }
+
+"and"           	{ return AND; }
+"or"            	{ return OR; }
+"not"           	{ return NOT; }
+
 {real}         		{ yylval.data.type = FLOAT; yylval.data.floatVal = atof(yytext); yylval.data.length = yyleng; 
 						yylval.data.dest = (char *)malloc(sizeof(char)*yyleng+1); strncpy(yylval.data.dest, yytext, yyleng+1); return CONST; }
 {integer} 			{ yylval.data.type = INTEGER; yylval.data.intVal = atoi(yytext); yylval.data.length = yyleng; 
 						yylval.data.dest = (char *)malloc(sizeof(char)*yyleng+1); strncpy(yylval.data.dest, yytext, yyleng+1); return CONST; }
+
+{boolean}			{ yylval.data.type = BOOLEAN;  yylval.data.boolVal = (strcmp(yytext, "true") == 0) ? 1 : 0; 
+						yylval.data.dest = (strcmp(yytext, "true") == 0) ? "TRUE" : "FALSE"; return BOOL; }
 
 {array}				{
 						yylval.data.name = (char *)malloc(sizeof(char)*yyleng); strncpy(yylval.data.name,yytext,yyleng);
@@ -81,9 +101,7 @@ EOL      		 	"\n"
 						else return ID;
 					}
 
-
 "\n"				{ return EOL; }
-"\0"				{ return END; }
 
 " "					{}
 

@@ -12,6 +12,13 @@ typedef enum
     BOOLEAN
 } datatype;
 
+typedef struct list
+{
+    int i;
+    struct list *next;
+} list;
+
+
 typedef struct var
 {
     char * name;
@@ -28,8 +35,12 @@ typedef struct var
     char * dest;
     char * control;
     int repeat;
-} var;
 
+    // Auxiliar variables for backpatching
+    list * truelist;
+    list * falselist;
+    list * nextlist;
+} var;
 
 typedef struct quad
 {
@@ -37,6 +48,9 @@ typedef struct quad
     char * arg1; 
     char * arg2; 
     char * result;   
+
+    /* Backpatching*/
+    char * label;
 } quad;
 
 typedef union{ var data; }YYSTYPE;

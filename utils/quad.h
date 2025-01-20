@@ -16,3 +16,8 @@ extern int currQuad;
 
 /* Temps operations*/
 char *newTemp();
+
+/* Backpatching */
+list* makelist(int i);
+list* merge(list *l1, list *l2);
+void backpatch(list *p, int l);

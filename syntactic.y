@@ -27,17 +27,21 @@
 
 %start program
 
-%token ASSIGN ADD SUB MUL DIV MOD POW EOL END IN_PAR OUT_PAR DO DONE
-%token <data> CONST ID REPEAT
-%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 repeat_statement_start
+%token ASSIGN ADD SUB MUL DIV MOD POW EOL END IN_PAR OUT_PAR 
+%token DO DONE IF THEN ELSE FI WHILE UNTIL FOR IN RANG AND NOT OR
+%token <data> CONST ID REPEAT BOOL BOOLOP
+%type <data> expression arithm arithm_l1 arithm_l2 arithm_l3 repeat_statement_start statement statement_list M N indexed_statementStart
+%type <data> boolean_op1 boolean_op2 boolean_op3 boolean_arithmetic boolean 
 
 %%
 
-program: statement_list
+program: statement_list {backpatch($1.nextlist, currQuad);}
 
-statement_list: statement_list statement | statement | statement_list repeat_statement_end | END
+statement_list: //statement_list M statement { backpatch($1.nextlist, $2.repeat); $$.nextlist = $3.nextlist; }
+				statement_list statement {backpatch($2.nextlist, currQuad+1);} 
+				| statement {$$.nextlist = $1.nextlist;} | statement_list repeat_statement_end 
 
-repeat_statement_start: REPEAT expression {
+repeat_statement_start: REPEAT arithm {
 												if($2.type == FLOAT) { yyerror("\033[31;1m SEMANTIC ERROR: loop expression NOT an integer... \033[0m" ); YYERROR; }
 
 												$$ = $2;
@@ -65,18 +69,61 @@ statement: ID EOL						{
 												addQuad(3, "CALL", $1.type == INTEGER  ? "PUTI" : "PUTF", "1");
 											}
 										}
-										
-
 			| ID ASSIGN expression EOL  { 	
+											$3.name = (char *)malloc(100);
+											strcpy($3.name, $1.name);
 											sym_enter( $1.name, &$3 );
 											fprintf(yyout, "ASSIGNATION: { id: %s, type: %s, value: %s } \n", $1.name, typeToString($3), valueToString($3)); 
 
 											addQuad(3, ":=", $1.name, $3.dest);
-										}				
+										}			
+
+			| IF IN_PAR boolean OUT_PAR THEN EOL M statement_list FI EOL { backpatch($3.truelist, $7.repeat); $$.nextlist = merge($3.falselist, $8.nextlist); }
+			| IF IN_PAR boolean OUT_PAR THEN EOL M statement_list N ELSE M statement_list FI {
+																					backpatch($9.nextlist, currQuad + 1);
+																					backpatch($3.truelist, $7.repeat);
+																					backpatch($3.falselist, $11.repeat);
+																					list * temp = merge($8.nextlist, $9.nextlist);
+																					$$.nextlist = merge(temp, $12.nextlist);
+																				}	
+			| WHILE IN_PAR M boolean OUT_PAR DO EOL M statement_list DONE EOL {
+				backpatch($9.nextlist, $3.repeat);
+				backpatch($4.truelist, $8.repeat);
+				$$.nextlist = $4.falselist;
+				char * aux = malloc(sizeof(char)*10);
+				sprintf(aux, "%d", $3.repeat);
+				addQuad(2, "GOTO", aux);
+				free(aux);
+			}
+			| DO EOL M statement_list UNTIL IN_PAR boolean OUT_PAR EOL { backpatch($7.truelist, $3.repeat); $$.nextlist = merge($7.falselist, $4.nextlist); }
+			| indexed_statementStart DO EOL statement_list DONE EOL	{
+				yylineno++;
+				addQuad(4, "ADDI", $1.name, $1.name, "1");
+				char * aux = malloc(sizeof(char)*10);
+				sprintf(aux, "%d", $1.repeat);
+				addQuad(2, "GOTO", aux);
+				char * aux2 = malloc(sizeof(char)*12);
+				sprintf(aux2, "%d", currQuad + 1);
+				quad_list[$1.repeat].label = malloc(sizeof(char)*100+1);
+				strcpy(quad_list[$1.repeat].label , aux2);
+
+				free(aux);
+				free(aux2);
+			}
+																							
 										
 			| EOL {}
 
-expression: arithm 
+indexed_statementStart: FOR ID IN arithm RANG arithm {
+	if($2.type != INTEGER){ yyerror("SEMANTIC ERROR: Loop initialization, invalid float operation.\n"); YYABORT; } 
+	else { addQuad(3, ":=", $2.name, $4.dest); $$.dest = $4.dest; $$.repeat = currQuad; $$.name = $2.name; addQuad(4, "IF", $2.name, "LEI", $6.dest); }
+};
+
+M: { $$.repeat = currQuad + 1; };
+N: { $$.nextlist = makelist(currQuad); addQuad(1, "GOTO");};
+
+
+expression: arithm | boolean
 
 arithm: arithm_l1 | arithm ADD arithm_l1 { if( add($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the ADD operation... \033[0m" ); YYABORT; } }
 			| arithm SUB arithm_l1 { if( sub($1, $3, &$$) ) { yyerror( "\033[31;1m SEMANTIC ERROR: something happened in the SUB operation... \033[0m" ); YYABORT; } }
@@ -126,6 +173,55 @@ arithm_l3: 	IN_PAR arithm OUT_PAR { $$ = $2; }
 								}		
 				| CONST 
 
+boolean: boolean_op1 | boolean OR M boolean_op1		{ 
+	
+	$$.dest = (char *)malloc(10);
+	$$.type = BOOLEAN;
+	strcpy($$.dest, newTemp());
+	backpatch($1.falselist, $3.repeat);
+	$$.truelist = merge($1.truelist, $4.truelist);
+	$$.falselist = $4.falselist;
+};
+
+boolean_op1: boolean_op2 | boolean_op1 AND M boolean_op2 {
+	$$.dest = (char *)malloc(10);
+	$$.type = BOOLEAN;
+	strcpy($$.dest, newTemp());
+	backpatch($1.truelist, $3.repeat);
+	$$.truelist = $4.truelist;
+	$$.truelist = merge($1.falselist, $4.falselist);
+};
+
+boolean_op2: boolean_op3 | NOT boolean_op2 { $$ = $2; $$.truelist = $2.falselist; $$.falselist = $2.truelist; }
+
+boolean_op3: boolean_arithmetic | IN_PAR boolean OUT_PAR	{ $$ = $2; }
+	| BOOL 	{ 
+		$$.dest = (char *)malloc(10);
+		$$.type = BOOLEAN;
+		strcpy($$.dest, $1.dest);
+		
+		if (strcmp($1.dest, "TRUE") == 0) $$.truelist = makelist(currQuad);
+		else $$.falselist = makelist(currQuad);
+		addQuad(1, "GOTO");
+	}
+	/*| B_ID	{	
+		if(sym_lookup($1.name, &$1) == SYMTAB_NOT_FOUND) {
+			yyerror("SEMANTIC ERROR: VARIABLE NOT FOUND\n");errflag = 1; YYERROR;
+		}
+		else { $$.type = $1.type; $$.value=$1.value; $$.place = $1.place;} 
+	};*/
+
+boolean_arithmetic: arithm BOOLOP arithm 	{
+	int aux = currQuad +1;
+	$$.truelist = makelist(currQuad);
+	$$.falselist = makelist(aux);
+	char buffer[100];
+	sprintf(buffer, $2.dest);
+	strcat(buffer, ($1.type == INTEGER && $3.type == INTEGER) ? "I" : "F");
+	addQuad(4, "IF", $1.dest, buffer, $3.dest);
+	addQuad(1, "GOTO");
+};
+
 
 %%
 
@@ -149,4 +245,4 @@ int end_analisi_sintactic(){
 	else{error = EXIT_FAILURE;} return error;
 }
 
-int yyerror(char *explanation){fprintf(stderr,"Error: %s, in line %d \n",explanation,yylineno); return 0;}
+int yyerror(char *explanation){fprintf(stderr,"Error: \033[31;1m %s \033[0m, in line %d \n",explanation,yylineno); return 0;}

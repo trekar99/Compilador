@@ -25,8 +25,8 @@ BIN = compiler
 LOG = log.txt
 
 LFLAGS = -n -o $*.c
-YFLAGS = -d -v -o $*.c
-CFLAGS = -ansi -Wall -g -std=c99
+YFLAGS = -d -v -o $*.c 
+CFLAGS = -ansi -Wall -g -std=c99 
 
 OTHERS = syntactic.h syntactic.output
 ######################################################################
@@ -43,3 +43,7 @@ test1:
 	./$(BIN) inputs/test.txt $(LOG)
 test2:
 	./$(BIN) inputs/test2.txt $(LOG)
+test3:
+	./$(BIN) inputs/test3.txt $(LOG)
+test4:
+	./$(BIN) inputs/test4.txt $(LOG)

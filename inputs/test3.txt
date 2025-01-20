@@ -1,0 +1,41 @@
+i := 0
+
+// if statement
+if (2 < 3) then
+    x := 3
+    i := x *2
+fi
+
+// if else statement
+i := 0
+if (i >= 2) then
+        x := 3
+        i := x * 2
+else
+        x := x - 1
+fi
+x
+
+//While loop
+total := 33
+while ( total < 100 ) do
+        total := total + 1
+done
+
+
+total
+
+total := 33
+do
+        x := 3 + total
+until ( x > total )
+
+//for loop
+i := 1
+for i in 3 .. 6 do
+        z := 3 + i
+        y := z * z
+done
+//y
+// Mirar variables 
+
